@@ -2,11 +2,12 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
+    # 🛠 Panel de administración de Django
     path('admin/', admin.site.urls),
 
-    # Tu aplicación principal con formulario y predicción
+    # 🧠 URLs de la app 'predictor' (formulario, predicción, historial, signup)
     path('', include('predictor.urls')),
 
-    # 👇 Habilita autenticación (login/logout usando Django por defecto)
+    # 🔐 Sistema de login/logout con Django Auth (usa templates en /registration/)
     path('accounts/', include('django.contrib.auth.urls')),
 ]
