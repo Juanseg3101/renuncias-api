@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>  
+  <meta charset="UTF-8">
+  <title>Predicción de Renuncia</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+  <div class="container mt-5">
+    <h2 class="text-center mb-4">Predicción de Renuncia de Empleados</h2>
+
+    <form id="formulario" class="bg-white p-4 rounded shadow">
+      <div class="mb-3">
+        <label for="satisfaccion" class="form-label">Nivel de Satisfacción (0 a 1)</label>
+        <input type="number" step="0.01" min="0" max="1" class="form-control" id="satisfaccion" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="antiguedad" class="form-label">Antigüedad (años)</label>
+        <input type="number" class="form-control" id="antiguedad" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="salario" class="form-label">Categoría de Salario</label>
+        <select class="form-select" id="salario" required>
+          <option value="low">Bajo</option>
+          <option value="medium">Medio</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="departamento" class="form-label">Departamento</label>
+        <select class="form-select" id="departamento" required>
+          <option value="Sales">Ventas</option>
+          <option value="Research & Development">Investigación y Desarrollo</option>
+          <option value="IT">IT</option>
+          <option value="RandD">RandD</option>
+          <option value="accounting">Contabilidad</option>
+          <option value="hr">Recursos Humanos</option>
+          <option value="management">Gerencia</option>
+          <option value="marketing">Marketing</option>
+          <option value="product_mng">Gestión de Productos</option>
+          <option value="sales">Ventas (duplicado)</option>
+          <option value="support">Soporte</option>
+          <option value="technical">Técnico</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">Predecir</button>
+    </form>
+
+    <div class="mt-4" id="resultado" style="display:none;"></div>
+  </div>
+
+  <script>
+    const formulario = document.getElementById("formulario");
+    const resultado = document.getElementById("resultado");
+
+    function limpiarClave(valor) {
+      return valor.toLowerCase().replace(/[\s&]/g, "_");
+    }
+
+    formulario.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const data = {
+        satisfaccion: parseFloat(document.getElementById("satisfaccion").value),
+        antiguedad: parseInt(document.getElementById("antiguedad").value),
+        salario_categoria_low: 0,
+        salario_categoria_medium: 0,
+        departamento_IT: 0,
+        departamento_RandD: 0,
+        departamento_Research_and_Development: 0,
+        departamento_Sales: 0,
+        departamento_accounting: 0,
+        departamento_hr: 0,
+        departamento_management: 0,
+        departamento_marketing: 0,
+        departamento_product_mng: 0,
+        departamento_sales: 0,
+        departamento_support: 0,
+        departamento_technical: 0
+      };
+
+      const salario = document.getElementById("salario").value;
+      if (salario === "low") data.salario_categoria_low = 1;
+      if (salario === "medium") data.salario_categoria_medium = 1;
+
+      const depto = document.getElementById("departamento").value;
+      const claveDepto = "departamento_" + limpiarClave(depto);
+      if (claveDepto in data) {
+        data[claveDepto] = 1;
+      }
+
+      const respuesta = await fetch("/predecir/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const json = await respuesta.json();
+      resultado.innerHTML = `
+        <div class="alert alert-info">
+          <strong>Resultado:</strong> ${json.renunciaria ? "⚠️ El empleado podría renunciar" : "✅ El empleado NO renunciaría"}<br>
+          <strong>Probabilidad:</strong> ${json.probabilidad * 100}%
+        </div>
+      `;
+      resultado.style.display = "block";
+    });
+  </script>
+
+</body>
+</html>
