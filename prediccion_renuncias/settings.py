@@ -25,7 +25,13 @@ SECRET_KEY = "django-insecure-0w7lz(8u+uq(bj!pfoub%ug-v512etel=3m3*lc!29c)6xs!%r
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["renuncias-api.onrender.com"]
+import os
+
+ALLOWED_HOSTS = ['renuncias-api.onrender.com']
+
+render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if render_host:
+    ALLOWED_HOSTS.append(render_host)
 
 
 # Application definition
