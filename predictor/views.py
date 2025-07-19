@@ -105,3 +105,17 @@ def historial_view(request):
     historial = HistorialPrediccion.objects.filter(usuario=request.user).order_by('-fecha')
     return render(request, 'predictor/historial.html', {'historial': historial})
     
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
+from django.shortcuts import redirect
+
+def signup_view(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            usuario = form.save()
+            login(request, usuario)  # Inicia sesión automáticamente
+            return redirect('formulario')
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/signup.html', {'form': form})
