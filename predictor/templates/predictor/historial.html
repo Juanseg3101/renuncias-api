@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2>Mi Historial de Predicciones</h2>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Satisfacción</th>
+        <th>Antigüedad</th>
+        <th>Salario</th>
+        <th>Departamento</th>
+        <th>¿Renunciaría?</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in historial %}
+      <tr>
+        <td>{{ item.fecha }}</td>
+        <td>{{ item.satisfaccion }}</td>
+        <td>{{ item.antiguedad }}</td>
+        <td>{{ item.salario }}</td>
+        <td>{{ item.departamento }}</td>
+        <td>{% if item.resultado %}Sí{% else %}No{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

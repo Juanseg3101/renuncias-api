@@ -5,11 +5,14 @@ import numpy as np
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import HistorialPrediccion  # 👈 Importar el modelo
 
 # Ruta al modelo
 MODEL_PATH = os.path.join(os.path.dirname(__file__), 'voting_model.pkl')
 modelo = joblib.load(MODEL_PATH)
 
+# Endpoint API para predicción
 @csrf_exempt
 def predecir_renuncia(request):
     if request.method == 'POST':
@@ -37,7 +40,6 @@ def predecir_renuncia(request):
 
             pred = modelo.predict([caracteristicas])[0]
 
-            # Validar si el modelo tiene predict_proba
             if hasattr(modelo, "predict_proba"):
                 prob = modelo.predict_proba([caracteristicas])[0][1]
             else:
@@ -53,6 +55,53 @@ def predecir_renuncia(request):
 
     return JsonResponse({'mensaje': 'Solo se permiten solicitudes POST'})
 
-# Vista para formulario HTML
+# Vista protegida para formulario HTML
+@login_required
 def formulario_view(request):
+    if request.method == 'POST':
+        # Obtener datos del formulario
+        satisfaccion = float(request.POST.get('satisfaccion'))
+        antiguedad = int(request.POST.get('antiguedad'))
+        salario = request.POST.get('salario')
+        departamento = request.POST.get('departamento')
+
+        # Codificación simple (ajusta si usas OneHot en frontend)
+        salario_low = 1 if salario == 'Low' else 0
+        salario_medium = 1 if salario == 'Medium' else 0
+
+        # Codificar departamentos
+        departamentos = [
+            'IT', 'RandD', 'Research_and_Development', 'Sales', 'accounting',
+            'hr', 'management', 'marketing', 'product_mng', 'sales', 'support', 'technical'
+        ]
+        dep_codificados = [1 if departamento == d else 0 for d in departamentos]
+
+        # Construir vector de entrada
+        caracteristicas = [satisfaccion, antiguedad, salario_low, salario_medium] + dep_codificados
+
+        # Hacer predicción
+        pred = modelo.predict([caracteristicas])[0]
+
+        # Guardar en historial
+        HistorialPrediccion.objects.create(
+            usuario=request.user,
+            satisfaccion=satisfaccion,
+            antiguedad=antiguedad,
+            salario=salario,
+            departamento=departamento,
+            resultado=bool(pred)
+        )
+
+        # Mostrar resultado
+        return render(request, 'predictor/formulario.html', {
+            'resultado': pred,
+            'mensaje': 'Renunciaría' if pred else 'No renunciaría'
+        })
+
     return render(request, 'predictor/formulario.html')
+
+@login_required
+def historial_view(request):
+    historial = HistorialPrediccion.objects.filter(usuario=request.user).order_by('-fecha')
+    return render(request, 'predictor/historial.html', {'historial': historial})
+    
