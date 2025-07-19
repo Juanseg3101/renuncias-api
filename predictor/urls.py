@@ -3,7 +3,8 @@ from .views import (
     predecir_renuncia,
     formulario_view,
     historial_view,
-    signup_view  # 👈 NUEVA vista de registro
+    signup_view,
+    dashboard_view  # 👈 NUEVA vista: dashboard
 )
 
 urlpatterns = [
@@ -11,4 +12,5 @@ urlpatterns = [
     path('', formulario_view, name='formulario'),                    # Página principal con formulario
     path('historial/', historial_view, name='historial'),            # Historial de predicciones
     path('signup/', signup_view, name='signup'),                     # Registro de nuevos usuarios
+    path('dashboard/', dashboard_view, name='dashboard'),            # 📊 Dashboard estadístico
 ]

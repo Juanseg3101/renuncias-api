@@ -119,3 +119,25 @@ def signup_view(request):
     else:
         form = UserCreationForm()
     return render(request, 'registration/signup.html', {'form': form})
+
+from django.db.models import Count
+from django.utils.timezone import now
+
+@login_required
+def dashboard_view(request):
+    # Filtro por usuario actual
+    predicciones = HistorialPrediccion.objects.filter(usuario=request.user)
+
+    total = predicciones.count()
+    renuncias = predicciones.filter(resultado=True).count()
+    no_renuncias = predicciones.filter(resultado=False).count()
+
+    # Agrupación por mes (ejemplo simple)
+    por_mes = predicciones.extra({'mes': "strftime('%%Y-%%m', fecha)"}).values('mes').annotate(total=Count('id')).order_by('mes')
+
+    return render(request, 'predictor/dashboard.html', {
+        'total': total,
+        'renuncias': renuncias,
+        'no_renuncias': no_renuncias,
+        'por_mes': list(por_mes),
+    })

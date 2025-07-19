@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-4">📊 Dashboard de Predicciones</h2>
+
+<div class="row text-center mb-4">
+  <div class="col-md-4">
+    <div class="card shadow-sm border-primary">
+      <div class="card-body">
+        <h5 class="card-title text-primary">Total</h5>
+        <p class="display-6">{{ total }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm border-danger">
+      <div class="card-body">
+        <h5 class="card-title text-danger">Renunciaría</h5>
+        <p class="display-6">{{ renuncias }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm border-success">
+      <div class="card-body">
+        <h5 class="card-title text-success">No renunciaría</h5>
+        <p class="display-6">{{ no_renuncias }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mt-4">
+  <div class="card-body">
+    <h5 class="card-title">📅 Predicciones por mes</h5>
+    <canvas id="graficoMeses"></canvas>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx = document.getElementById('graficoMeses').getContext('2d');
+  const datos = {{ por_mes|safe }};
+  const labels = datos.map(d => d.mes);
+  const valores = datos.map(d => d.total);
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Cantidad de predicciones',
+        data: valores,
+        borderWidth: 1,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: 'Evolución mensual' }
+      }
+    }
+  });
+</script>
+{% endblock %}
