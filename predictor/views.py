@@ -142,4 +142,27 @@ def dashboard_view(request):
         'no_renuncias': no_renuncias,
         'por_mes': list(por_mes),
     })
-    
+import csv
+from django.http import HttpResponse
+
+@login_required
+def exportar_csv_view(request):
+    predicciones = HistorialPrediccion.objects.filter(usuario=request.user).order_by('-fecha')
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="historial_predicciones.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Fecha', 'Satisfacción', 'Antigüedad', 'Salario', 'Departamento', 'Resultado'])
+
+    for item in predicciones:
+        writer.writerow([
+            item.fecha.strftime("%Y-%m-%d %H:%M"),
+            item.satisfaccion,
+            item.antiguedad,
+            item.salario,
+            item.departamento,
+            "Renunciaría" if item.resultado else "No renunciaría"
+        ])
+
+    return response
